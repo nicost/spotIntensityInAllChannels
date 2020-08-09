@@ -1,4 +1,4 @@
-# spotIntensityInAllChannels
+# Spot Intensity In All Channels
 
 ImageJ/Fiji plugin for analysis of intensity of spots identified in one channel, in all channels.  
 
