@@ -3,6 +3,7 @@ package edu.ucsf.valelab.spotintensityallchannels;
 
 import edu.ucsf.valelab.spotintensityallchannels.algorithm.NearestPoint2D;
 import edu.ucsf.valelab.spotintensityallchannels.algorithm.Utils;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.ResultsTable;
 import ij.text.TextWindow;
@@ -58,6 +59,9 @@ public class ImageWindowListener implements MouseListener {
    
    private void update(MouseEvent e) {
       if (iPlus_ == null) {
+         return;
+      }
+      if (!IJ.getToolName().equals("hand")) {
          return;
       }
       int tx = e.getX();

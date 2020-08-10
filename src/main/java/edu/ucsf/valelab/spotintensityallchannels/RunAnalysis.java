@@ -22,7 +22,7 @@ package edu.ucsf.valelab.spotintensityallchannels;
 
  import edu.ucsf.valelab.spotintensityallchannels.algorithm.FindLocalMaxima;
  import edu.ucsf.valelab.spotintensityallchannels.algorithm.Utils;
- import edu.ucsf.valelab.spotintensityallchannels.data.SpotIntensityParameters;
+ import edu.ucsf.valelab.spotintensityallchannels.data.MeasurementParameters;
  import ij.ImagePlus;
  import ij.WindowManager;
  import ij.gui.GenericDialog;
@@ -46,39 +46,24 @@ package edu.ucsf.valelab.spotintensityallchannels;
  */
 public class RunAnalysis extends Thread {
    final ImagePlus iPlus_;
-   final SpotIntensityParameters parms_;
+   final MeasurementParameters parameters_;
    final GenericDialog gd_;
    
-   public RunAnalysis(ImagePlus iPlus,  
-           SpotIntensityParameters parms, GenericDialog gd){
+   public RunAnalysis(ImagePlus iPlus,
+                      MeasurementParameters parameters, GenericDialog gd){
       iPlus_ = iPlus;
-      parms_ = parms;
+      parameters_ = parameters;
       gd_ = gd;
    }
    
    @Override
    public void run() {
-      ImageProcessor ip = iPlus_.getProcessor();
-
-      //QuartCircleOutlineMask qc = new QuartCircleOutlineMask(5);
-      //qc.print();
-
-      /*
-      List<ImageProcessor> ipsByChannel = new ArrayList<ImageProcessor>(iPlus_.getNChannels());
-      final int originalC = iPlus_.getC();
-      for (int c = 0; c < iPlus_.getNChannels(); c++) {
-         iPlus_.setPositionWithoutUpdate(c + 1, iPlus_.getSlice(), iPlus_.getFrame());
-         ipsByChannel.add(c, iPlus_.getProcessor());
-         ij.IJ.log("Channel: " + (c+1) + ": " + ipsByChannel.get(c).getStatistics().mean);
-      }
-      iPlus_.setPosition(originalC, iPlus_.getSlice(), iPlus_.getFrame());
-
-       */
-      final int originalC = iPlus_.getC();
-      Polygon maxima = FindLocalMaxima.FindMax(ip, 
-              parms_.detectionRadius_, parms_.noiseTolerance_,
+      final int originalC = iPlus_.getChannel();
+      final int originalZ = iPlus_.getSlice();
+      Polygon maxima = FindLocalMaxima.FindMax(iPlus_,
+              parameters_.detectionRadius_, parameters_.noiseTolerance_,
               FindLocalMaxima.FilterType.NONE);
-      Overlay ovl = Utils.GetSpotOverlay(maxima, parms_.detectionRadius_, Color.red);
+      Overlay ovl = Utils.GetSpotOverlay(maxima, parameters_.detectionRadius_, Color.red);
       
       iPlus_.setOverlay(ovl);
 
@@ -91,41 +76,27 @@ public class RunAnalysis extends Thread {
          final int y = maxima.ypoints[i];
          res.addValue("x", x);
          res.addValue("y", y);
-         for (int c = 0; c < iPlus_.getNChannels(); c++) {
-            iPlus_.setPositionWithoutUpdate(c + 1, iPlus_.getSlice(), iPlus_.getFrame());
-            ImageProcessor ipc = iPlus_.getProcessor();
-            float intensity = Utils.GetAvgIntensity( ipc, x, y, parms_.detectionRadius_);
-            res.addValue("I-ch" + (c+1), intensity);
-            float background = Utils.GetBackgroundCircleRp2(ipc, x, y, parms_.backgroundRadius_);
-            res.addValue("B-ch" + (c+1), background);
-         }
-      }
-      iPlus_.setPositionWithoutUpdate(originalC, iPlus_.getSlice(), iPlus_.getFrame());
-    /*
-      
-      ImagePlus backgroundIP = new ImagePlus("test", ip.duplicate());
-      if (parms_.backgroundMethod_.equals(SpotIntensityInAllChannels.GAUSSIAN100)) {
-         IJ.run(backgroundIP,"Gaussian Blur...", "sigma=100");
-      } else if (parms_.backgroundMethod_.equals(SpotIntensityInAllChannels.MEDIAN40)) {
-         IJ.run(backgroundIP, "Median...", "radius=40");
-      }
-      
-      ImageCalculator iCalc = new ImageCalculator();
-      for (int frame = 1; frame <= iPlus_.getNFrames(); frame++) {
-         IJ.showProgress(frame, iPlus_.getNFrames());
-         ImageProcessor frameProcessor = is.getProcessor(frame);
-         ImagePlus sub = iCalc.run("Subtract create 32-bit",  
-                 new ImagePlus("t", frameProcessor), backgroundIP );
-         for (int i = 0; i < maxima.npoints; i++) {
-            int x = maxima.xpoints[i];
-            int y = maxima.ypoints[i];
-            float intensity = Utils.GetIntensity((FloatProcessor) sub.getProcessor(), x, y, parms_.radius_);
-            res.setValue("" + (frame - 1) * parms_.intervalS_, i , intensity * parms_.ePerADU_);
+         if (parameters_.useSlicesAsChannels_) {
+            for (int z = 0; z < iPlus_.getNSlices(); z++) {
+               iPlus_.setPositionWithoutUpdate(iPlus_.getChannel(), z + 1, iPlus_.getFrame());
+               ImageProcessor ipc = iPlus_.getProcessor();
+               float intensity = Utils.GetAvgIntensity(ipc, x, y, parameters_.detectionRadius_);
+               res.addValue("I-ch" + (z + 1), intensity);
+               float background = Utils.GetBackgroundCircleRp2(ipc, x, y, parameters_.backgroundRadius_);
+               res.addValue("B-ch" + (z + 1), background);
+            }
+         } else {
+            for (int c = 0; c < iPlus_.getNChannels(); c++) {
+               iPlus_.setPositionWithoutUpdate(c + 1, iPlus_.getSlice(), iPlus_.getFrame());
+               ImageProcessor ipc = iPlus_.getProcessor();
+               float intensity = Utils.GetAvgIntensity(ipc, x, y, parameters_.detectionRadius_);
+               res.addValue("I-ch" + (c + 1), intensity);
+               float background = Utils.GetBackgroundCircleRp2(ipc, x, y, parameters_.backgroundRadius_);
+               res.addValue("B-ch" + (c + 1), background);
+            }
          }
       }
 
-     */
-       
       String name = "Spot analysis of " + iPlus_.getShortTitle();
       res.show(name);
       
@@ -142,12 +113,12 @@ public class RunAnalysis extends Thread {
             tp.removeKeyListener(ks);
          }
 
-         ResultsTableListener myk = new ResultsTableListener(iPlus_, res, twin, parms_);
+         ResultsTableListener myk = new ResultsTableListener(iPlus_, res, twin, parameters_);
          tp.addKeyListener(myk);
          tp.addMouseListener(myk);
          frame.toFront();
 
-         // atach listener to ImageWindow
+         // attach listener to ImageWindow
          ImageWindow iWin = iPlus_.getWindow();
          ImageCanvas canvas = iWin.getCanvas();
          for (MouseListener ms : canvas.getMouseListeners()) {
@@ -160,18 +131,20 @@ public class RunAnalysis extends Thread {
          canvas.addMouseListener(iwl);
       }
 
+      if (parameters_.useSlicesAsChannels_) {
+         iPlus_.setPosition(iPlus_.getChannel(), originalZ, iPlus_.getFrame());
+      } else {
+         iPlus_.setPosition(originalC, iPlus_.getSlice(), iPlus_.getFrame());
+      }
+
    }
 
    
    public void preview () {
-      
-      // first calculate the mean of the first n images
-      final ImageProcessor ip = iPlus_.getProcessor();
-      
-      Polygon maxima = FindLocalMaxima.FindMax(ip, 
-              parms_.detectionRadius_, parms_.noiseTolerance_,
+      Polygon maxima = FindLocalMaxima.FindMax(iPlus_,
+              parameters_.detectionRadius_, parameters_.noiseTolerance_,
               FindLocalMaxima.FilterType.NONE);
-      Overlay ovl = Utils.GetSpotOverlay(maxima, parms_.detectionRadius_, Color.red);
+      Overlay ovl = Utils.GetSpotOverlay(maxima, parameters_.detectionRadius_, Color.red);
       
       iPlus_.setOverlay(ovl);
    }

@@ -20,7 +20,7 @@
 
 package edu.ucsf.valelab.spotintensityallchannels;
 
-import edu.ucsf.valelab.spotintensityallchannels.data.SpotIntensityParameters;
+import edu.ucsf.valelab.spotintensityallchannels.data.MeasurementParameters;
 import edu.ucsf.valelab.spotintensityallchannels.plot.PlotUtils;
 import ij.IJ;
 import ij.ImagePlus;
@@ -48,11 +48,11 @@ public class ResultsTableListener implements KeyListener, MouseListener{
    final private ResultsTable res_;
    final private TextWindow win_;
    final TextPanel tp_; 
-   final SpotIntensityParameters parms_;
+   final MeasurementParameters parms_;
    final PlotUtils pu_;
    
    public ResultsTableListener(ImagePlus siPlus, ResultsTable res, 
-           TextWindow win, SpotIntensityParameters parms) {
+           TextWindow win, MeasurementParameters parms) {
       siPlus_ = siPlus;
       res_ = res;
       win_ = win;

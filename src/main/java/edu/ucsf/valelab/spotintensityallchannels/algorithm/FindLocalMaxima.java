@@ -77,20 +77,22 @@ public class FindLocalMaxima {
     * Static utility function to find local maxima in an Image
     * 
     * 
-    * @param iProc - ImageProcessor object in which to look for local maxima
+    * @param iPlus - ImagePlus object in which to look for local maxima
     * @param n - minimum distance to other local maximum
     * @param threshold - value below which a maximum will be rejected
     * @param filterType - Prefilter the image.  Either none or Gaussian1_5
     * @return Polygon with maxima 
     */
    public static Polygon FindMax(
-           ImageProcessor iProc, 
+           ImagePlus iPlus,
            int n, 
            int threshold, 
            FilterType filterType) {
-      
+
+      ImageProcessor iProc = iPlus.getProcessor();
       Polygon maxima = new Polygon();
       Rectangle roi = iProc.getRoi();
+      ImageProcessor ipMask = iPlus.getMask();
       
       // Prefilter if needed
       switch (filterType) {
@@ -177,10 +179,15 @@ public class FindLocalMaxima {
                       ( (iProc.getPixel(mi - n , mj - n) + iProc.getPixel(mi -n, mj + n) +
                        iProc.getPixel(mi + n, mj  - n) + iProc.getPixel(mi + n, mj + n)) / 4) ) 
                     > threshold) &&
-                    mi > n && mi < xEnd && mj > n && mj < yEnd)
-               maxima.addPoint(mi, mj);
+                    mi > n && mi < xEnd && mj > n && mj < yEnd) {
+               // Ensure that we are in the (irregular) ROI
+               if (ipMask == null || ipMask.get(mi - roi.x, mj - roi.y) > 0) {
+                  maxima.addPoint(mi, mj);
+               }
+            }
          }
       }
+
 
 
       return maxima;

@@ -25,10 +25,11 @@ package edu.ucsf.valelab.spotintensityallchannels.data;
  *
  * @author nico
  */
-public class SpotIntensityParameters {
+public class MeasurementParameters {
    public int noiseTolerance_;
    public int detectionRadius_;
    public int measurementRadius_;
    public int backgroundRadius_;
+   public boolean useSlicesAsChannels_;
    
 }
