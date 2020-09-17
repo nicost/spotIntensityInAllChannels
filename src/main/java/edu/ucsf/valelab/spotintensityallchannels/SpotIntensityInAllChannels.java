@@ -41,6 +41,7 @@ public class SpotIntensityInAllChannels implements PlugIn, DialogListener {
    private final String MEASUREMENT_SPOT_RADIUS = "MeasurementSpotRadius";
    private final String BACKGROUND_RADIUS = "BackgroundRadius";
    private final String TREAT_SLICES_AS_CHANNELS = "TreatSLicesASChannels";
+   private final String OUTPUT_FORMAT = "OutputFormat";
    
    public SpotIntensityInAllChannels() {
       myPrefs_ = Preferences.userNodeForPackage(this.getClass());
@@ -63,6 +64,8 @@ public class SpotIntensityInAllChannels implements PlugIn, DialogListener {
               myPrefs_.getInt(BACKGROUND_RADIUS, 5), 0);
       gd.addCheckbox("Treat Slices as Channels",
               myPrefs_.getBoolean(TREAT_SLICES_AS_CHANNELS, true));
+      gd.addChoice("Output Format", MeasurementParameters.outputFormats,
+              myPrefs_.get(OUTPUT_FORMAT, MeasurementParameters.outputFormats[0]));
       
       gd.addPreviewCheckbox(null, "Preview");
       
@@ -106,6 +109,8 @@ public class SpotIntensityInAllChannels implements PlugIn, DialogListener {
       myPrefs_.putInt(BACKGROUND_RADIUS, parms.backgroundRadius_);
       parms.useSlicesAsChannels_ = gd.getNextBoolean();
       myPrefs_.putBoolean(TREAT_SLICES_AS_CHANNELS, parms.useSlicesAsChannels_);
+      parms.outputFormat_ = gd.getNextChoice();
+      myPrefs_.put(OUTPUT_FORMAT, parms.outputFormat_);
 
       return parms;
    }

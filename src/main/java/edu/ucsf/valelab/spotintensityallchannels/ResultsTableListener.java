@@ -103,6 +103,9 @@ public class ResultsTableListener implements KeyListener, MouseListener{
 
    private void update() {
       int row = tp_.getSelectionStart();
+      if (row < 0) // avoid excpetion when clicking in empty area
+         return;
+
       int x = (int) res_.getValue("x", row);
       int y = (int) res_.getValue("y", row);
       

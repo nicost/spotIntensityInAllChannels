@@ -21,15 +21,24 @@
  */
 package edu.ucsf.valelab.spotintensityallchannels.data;
 
+
 /**
  *
  * @author nico
  */
 public class MeasurementParameters {
+   public static final String CLASSIC = "Channels in Columns";
+   public static final String CLASSIC_BC = "Channels in Columns BG subtracted";
+   public static final String CHANNELS_ROWS = "Channels in Rows";
+   public static final String CHANNELS_ROWS_BC = "Channels in Rows BG subtracted";
+   public static final String[] outputFormats = {CLASSIC, CLASSIC_BC, CHANNELS_ROWS, CHANNELS_ROWS_BC};
+
+
    public int noiseTolerance_;
    public int detectionRadius_;
    public int measurementRadius_;
    public int backgroundRadius_;
    public boolean useSlicesAsChannels_;
+   public String outputFormat_;
    
 }

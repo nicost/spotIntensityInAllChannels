@@ -79,13 +79,15 @@ public class FindLocalMaxima {
     * 
     * @param iPlus - ImagePlus object in which to look for local maxima
     * @param n - minimum distance to other local maximum
+    * @param e - minimum distance from edge of the image
     * @param threshold - value below which a maximum will be rejected
     * @param filterType - Prefilter the image.  Either none or Gaussian1_5
     * @return Polygon with maxima 
     */
    public static Polygon FindMax(
            ImagePlus iPlus,
-           int n, 
+           int n,
+           int e,
            int threshold, 
            FilterType filterType) {
 
@@ -115,15 +117,15 @@ public class FindLocalMaxima {
       int n2 = 2*n + 1;
       // calculate borders once
       int xRealEnd = roi.x + roi.width;
-      int xEnd = xRealEnd - n;
+      int xEnd = xRealEnd - e;
       int yRealEnd = roi.y + roi.height;
-      int yEnd = yRealEnd - n;
-      for (int i=roi.x + n/2; i < xEnd; i+=n2) {
-         for (int j=roi.y + n/2; j < yEnd; j+=n2) {
+      int yEnd = yRealEnd - e;
+      for (int i=roi.x + e; i < xEnd; i+=n2) {
+         for (int j=roi.y + e; j < yEnd; j+=n2) {
             int mi = i;
             int mj = j;
-            for (int i2=i; i2 < i + n2 && i2 < xRealEnd - n/2; i2++) {
-               for (int j2=j; j2 < j + n2 && j2 < yRealEnd - n/2; j2++) {
+            for (int i2=i; i2 < i + n2 && i2 < xRealEnd - e/2; i2++) {
+               for (int j2=j; j2 < j + n2 && j2 < yRealEnd - e/2; j2++) {
                   // revert getPixel to get after debugging
                   if (iProc.getPixel(i2, j2) > iProc.getPixel(mi, mj)) {
                      mi = i2;
@@ -187,8 +189,6 @@ public class FindLocalMaxima {
             }
          }
       }
-
-
 
       return maxima;
    }

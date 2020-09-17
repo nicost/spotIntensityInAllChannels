@@ -96,7 +96,7 @@ public class Utils {
     * @param radius
     * @return Summed Intensity
     */
-   public static float GetAvgIntensity(ImageProcessor ip, int x, int y, int radius) {
+   public static float GetAvgIntensity(ImageProcessor ip, final int x, final int y, int radius) {
       float results = 0.0f;
       int counter = 0;
       if (circleMask_ == null || circleMask_.getRadius() != radius)
@@ -174,7 +174,7 @@ public class Utils {
     * @param radius
     * @return Summed Intensity
     */
-   public static float GetBackgroundCircleRp2(ImageProcessor ip, int x, int y, int radius) {
+   public static float GetBackgroundCircleRp2(ImageProcessor ip, final int x, final int y, int radius) {
       List<Float> results = new ArrayList<Float>(8 * radius);
       if (circleOutlineMask_ == null || circleOutlineMask_.getRadius() != radius)
          circleOutlineMask_ = new QuartCircleOutlineMask(radius);
